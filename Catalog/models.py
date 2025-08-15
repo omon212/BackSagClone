@@ -64,9 +64,9 @@ class CategoryModel(models.Model):
 
 class SizeModel(models.Model):
     shape = models.ForeignKey(Shape, on_delete=models.CASCADE)
-    width = models.CharField(max_length=32, unique=True)
-    height = models.CharField(max_length=32, unique=True)
-    price = models.CharField(max_length=64, unique=True)
+    width = models.CharField(max_length=32)
+    height = models.CharField(max_length=32)
+    price = models.CharField(max_length=64)
     discount = models.CharField(max_length=64, blank=True, null=True)
     model = models.ForeignKey(CategoryModel, on_delete=models.CASCADE)
 
