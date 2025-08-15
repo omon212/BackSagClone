@@ -6,7 +6,7 @@ from .serializers import *
 from django.db.models import Count
 
 
-class BrandListView(APIView):
+class BrandView(APIView):
     def get(self, request, catalog_name):
         brands = GilamBrand.objects.all()
         result = []
@@ -28,7 +28,7 @@ class BrandListView(APIView):
         return Response(result, status=200)
 
 
-class ModelListView(APIView):
+class ModelView(APIView):
     def get(self, request, catalog_name, brand_name):
         models_map = {
             'gilam': (GilamBrand, GilamModel, GilamModelSerializer, 'gilam'),
