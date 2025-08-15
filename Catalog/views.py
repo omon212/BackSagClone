@@ -3,24 +3,29 @@ from rest_framework.response import Response
 from rest_framework import status
 from .models import *
 from .serializers import *
+from django.db.models import Count
 
 
 class BrandListView(APIView):
     def get(self, request, catalog_name):
-        catalogs_map = {
-            'gilam': (GilamBrand, GilamBrandSerializer),
-            'kovrolin': (KovrolinBrand, KovrolinBrandSerializer),
-            'gazon': (GazonBrand, GazonBrandSerializer),
-            'metrli_yolak': (MetrliYolakBrand, MetrliYolakBrandSerializer)
-        }
-
-        if catalog_name not in catalogs_map:
-            return Response({"error": "Bunday katalog topilmadi"}, status=status.HTTP_404_NOT_FOUND)
-
-        model_class, serializer_class = catalogs_map[catalog_name]
-        queryset = model_class.objects.all()
-        serializer = serializer_class(queryset, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        brands = GilamBrand.objects.all()
+        result = []
+        for brand in brands:
+            status_counts = (
+                GilamModel.objects
+                .filter(gilam=brand)
+                .values('status')
+                .annotate(count=Count('status'))
+                .order_by('-count')
+            )
+            most_common_status = status_counts[0]['status'].capitalize() if status_counts else None
+            result.append({
+                "id": brand.id,
+                "name": brand.name,
+                "img": brand.img.url if brand.img else None,
+                "status": most_common_status
+            })
+        return Response(result, status=200)
 
 
 class ModelListView(APIView):
@@ -31,17 +36,13 @@ class ModelListView(APIView):
             'gazon': (GazonBrand, GazonModel, GazonModelSerializer, 'gazon'),
             'metrli_yolak': (MetrliYolakBrand, MetrliYolakModel, MetrliYolakModelSerializer, 'yolak')
         }
-
         if catalog_name not in models_map:
-            return Response({"error": "Bunday katalog topilmadi"}, status=status.HTTP_404_NOT_FOUND)
-
+            return Response({"error": "Bunday katalog topilmadi"}, status=404)
         brand_model, model_model, serializer_class, fk_field = models_map[catalog_name]
-
         try:
             brand = brand_model.objects.get(name=brand_name)
         except brand_model.DoesNotExist:
-            return Response({"error": "Brand topilmadi"}, status=status.HTTP_404_NOT_FOUND)
-
+            return Response({"error": "Brand topilmadi"}, status=404)
         queryset = model_model.objects.filter(**{fk_field: brand})
         serializer = serializer_class(queryset, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.data, status=200)
