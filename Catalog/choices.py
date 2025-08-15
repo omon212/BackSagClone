@@ -27,7 +27,7 @@ STYLE_CHOICES = [
 
 STATUS_CHOICES = [
     ('xit', 'Xit'),
-    ('yangilik', 'Yangilik'),
+    ('yangi', 'Yangi'),
     ('chegirma', 'Chegirma'),
     ('kop_sotilgan', 'Ko‘p sotilgan'),
 ]
